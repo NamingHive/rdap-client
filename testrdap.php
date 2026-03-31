@@ -2,17 +2,17 @@
 include './vendor/autoload.php';
 
 //$search = 59980;
-//$protocol = Metaregistrar\RDAP\rdap::ASN;
+//$protocol = NamingHive\RDAP\rdap::ASN;
 //$search = 'RIPE-NCC-END-MNT';
 //$search = '81.4.97.200';
 //$search = '196.216.2.6';
 //$search = '8.8.4.4';
 $search = 'gamma.com';
-//$protocol = Metaregistrar\RDAP\Rdap::IPV4;
-$protocol = Metaregistrar\RDAP\Rdap::DOMAIN;
+//$protocol = NamingHive\RDAP\Rdap::IPV4;
+$protocol = NamingHive\RDAP\Rdap::DOMAIN;
 
 try {
-    $rdap = new Metaregistrar\RDAP\Rdap($protocol);
+    $rdap = new NamingHive\RDAP\Rdap($protocol);
     $test = $rdap->search($search);
 
     if ($test) {
@@ -90,6 +90,6 @@ try {
 
 
 
-} catch (Metaregistrar\RDAP\rdapException $e) {
+} catch (NamingHive\RDAP\rdapException $e) {
     echo 'ERROR: ' .$e->getMessage().PHP_EOL;
 }

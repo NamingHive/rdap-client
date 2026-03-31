@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Metaregistrar\RDAP\Data;
+namespace NamingHive\RDAP\Data;
 
 final class RdapConformance extends RdapObject {
     protected $rdapConformance;

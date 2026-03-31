@@ -1,21 +1,21 @@
 {
-  "name": "metaregistrar/rdap-client",
+  "name": "naminghive/rdap-client",
   "description": "A php client to query rdap (formerly whois) services",
   "minimum-stability": "stable",
   "license": "proprietary",
   "require": {
-    "php": ">=7.2",
+    "php": ">=8.0",
     "ext-json": "*"
   },
   "authors": [
     {
-      "name": "Ewout de Graaf",
-      "email": "ewout@metaregistrar.com"
+      "name": "Rayhan Sardar",
+      "email": "rayhan@kha.icu"
     }
   ],
   "autoload": {
     "psr-4": {
-      "Metaregistrar\\RDAP\\": "src"
+      "NamingHive\\RDAP\\": "src"
     }
   },
   "require-dev": {

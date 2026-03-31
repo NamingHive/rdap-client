@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Metaregistrar\RDAP;
+namespace NamingHive\RDAP;
 
-use Metaregistrar\RDAP\Responses\RdapAsnResponse;
-use Metaregistrar\RDAP\Responses\RdapIpResponse;
-use Metaregistrar\RDAP\Responses\RdapResponse;
+use NamingHive\RDAP\Responses\RdapAsnResponse;
+use NamingHive\RDAP\Responses\RdapIpResponse;
+use NamingHive\RDAP\Responses\RdapResponse;
 
 final class Rdap {
     public const ASN    = 'asn';
@@ -33,7 +33,7 @@ final class Rdap {
      *
      * @param string $protocol
      *
-     * @throws \Metaregistrar\RDAP\RdapException
+     * @throws \NamingHive\RDAP\RdapException
      */
     public function __construct(string $protocol) {
         if (($protocol !== self::ASN) && ($protocol !== self::IPV4) && ($protocol !== self::IPV6) && ($protocol !== self::DOMAIN)) {
@@ -90,8 +90,8 @@ final class Rdap {
      *
      * @param string $search
      *
-     * @return \Metaregistrar\RDAP\Responses\RdapAsnResponse|\Metaregistrar\RDAP\Responses\RdapIpResponse|\Metaregistrar\RDAP\Responses\RdapResponse|null
-     * @throws \Metaregistrar\RDAP\RdapException
+     * @return \NamingHive\RDAP\Responses\RdapAsnResponse|\NamingHive\RDAP\Responses\RdapIpResponse|\NamingHive\RDAP\Responses\RdapResponse|null
+     * @throws \NamingHive\RDAP\RdapException
      */
     public function search(string $search): ?RdapResponse {
         if (!isset($search) || ($search === '')) {
@@ -184,8 +184,8 @@ final class Rdap {
      * @param string $protocol
      * @param string $json
      *
-     * @return \Metaregistrar\RDAP\Responses\RdapResponse
-     * @throws \Metaregistrar\RDAP\RdapException
+     * @return \NamingHive\RDAP\Responses\RdapResponse
+     * @throws \NamingHive\RDAP\RdapException
      */
     private function createResponse(string $protocol, string $json): RdapResponse {
         switch ($protocol) {

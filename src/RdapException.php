@@ -1,6 +1,6 @@
 <?php
 
-namespace Metaregistrar\RDAP;
+namespace NamingHive\RDAP;
 
 use Exception;
 

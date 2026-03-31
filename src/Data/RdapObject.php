@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Metaregistrar\RDAP\Data;
+namespace NamingHive\RDAP\Data;
 
-use Metaregistrar\RDAP\RdapException;
+use NamingHive\RDAP\RdapException;
 
 /**
  * This is the parent  class for all RdapXXXXX objects. This  class will interpret the json that was received and convert it into objects that give back the data required
  * Class RdapObject
  *
- * @package Metaregistrar\RDAP
+ * @package NamingHive\RDAP
  */
 class RdapObject {
     /**
@@ -22,7 +22,7 @@ class RdapObject {
      * @param string $key
      * @param mixed  $content
      *
-     * @throws \Metaregistrar\RDAP\RdapException
+     * @throws \NamingHive\RDAP\RdapException
      */
     public function __construct(string $key, $content) {
         if ($content) {
@@ -41,7 +41,7 @@ class RdapObject {
                     }
                 }
             } else {
-                $var          = str_replace('Metaregistrar\RDAP\\', '', $key);
+                $var          = str_replace('NamingHive\RDAP\\', '', $key);
                 $this->{$var} = $content;
             }
         }
@@ -54,7 +54,7 @@ class RdapObject {
      * @param $value
      *
      * @return mixed
-     * @throws \Metaregistrar\RDAP\RdapException
+     * @throws \NamingHive\RDAP\RdapException
      */
     private static function createObject($key, $value) {
         if (is_numeric($key)) {

@@ -1,12 +1,12 @@
 <?php
 
-namespace Metaregistrar\RDAP;
+namespace NamingHive\RDAP;
 
-use Metaregistrar\RDAP\Data\RdapEntity;
-use Metaregistrar\RDAP\Data\RdapNameserver;
-use Metaregistrar\RDAP\Data\RdapNotice;
-use Metaregistrar\RDAP\Rdap;
-use Metaregistrar\RDAP\RdapException;
+use NamingHive\RDAP\Data\RdapEntity;
+use NamingHive\RDAP\Data\RdapNameserver;
+use NamingHive\RDAP\Data\RdapNotice;
+use NamingHive\RDAP\Rdap;
+use NamingHive\RDAP\RdapException;
 use PHPUnit\Framework\TestCase;
 
 final class RdapTest extends TestCase {
@@ -19,7 +19,7 @@ final class RdapTest extends TestCase {
 
     /**
      * @return void
-     * @throws \Metaregistrar\RDAP\RdapException
+     * @throws \NamingHive\RDAP\RdapException
      */
     public function testEmptySearch(): void {
         $rdap = new Rdap(Rdap::IPV4);
@@ -30,7 +30,7 @@ final class RdapTest extends TestCase {
 
     /**
      * @return void
-     * @throws \Metaregistrar\RDAP\RdapException
+     * @throws \NamingHive\RDAP\RdapException
      */
     public function testNoConstructorParamter(): void {
         $this->expectException(RdapException::class);

@@ -1,19 +1,19 @@
 <?php declare(strict_types=1);
 
-namespace Metaregistrar\RDAP\Responses;
+namespace NamingHive\RDAP\Responses;
 
-use Metaregistrar\RDAP\Data\RdapConformance;
-use Metaregistrar\RDAP\Data\RdapEntity;
-use Metaregistrar\RDAP\Data\RdapEvent;
-use Metaregistrar\RDAP\Data\RdapLink;
-use Metaregistrar\RDAP\Data\RdapNameserver;
-use Metaregistrar\RDAP\Data\RdapNotice;
-use Metaregistrar\RDAP\Data\RdapObject;
-use Metaregistrar\RDAP\Data\RdapPort43;
-use Metaregistrar\RDAP\Data\RdapRemark;
-use Metaregistrar\RDAP\Data\RdapSecureDNS;
-use Metaregistrar\RDAP\Data\RdapStatus;
-use Metaregistrar\RDAP\RdapException;
+use NamingHive\RDAP\Data\RdapConformance;
+use NamingHive\RDAP\Data\RdapEntity;
+use NamingHive\RDAP\Data\RdapEvent;
+use NamingHive\RDAP\Data\RdapLink;
+use NamingHive\RDAP\Data\RdapNameserver;
+use NamingHive\RDAP\Data\RdapNotice;
+use NamingHive\RDAP\Data\RdapObject;
+use NamingHive\RDAP\Data\RdapPort43;
+use NamingHive\RDAP\Data\RdapRemark;
+use NamingHive\RDAP\Data\RdapSecureDNS;
+use NamingHive\RDAP\Data\RdapStatus;
+use NamingHive\RDAP\RdapException;
 
 class RdapResponse {
     /**
@@ -82,7 +82,7 @@ class RdapResponse {
      *
      * @param string $json
      *
-     * @throws \Metaregistrar\RDAP\RdapException
+     * @throws \NamingHive\RDAP\RdapException
      */
     public function __construct(string $json) {
         if ($data = json_decode($json, true)) {
