@@ -19,9 +19,6 @@ final class RdapNotice extends RdapObject {
         parent::__construct($key, $content);
     }
 
-    /**
-     * @return void
-     */
     public function dumpContents(): void {
         echo '- ' . $this->getTitle() . ": " . $this->getType() . PHP_EOL;
         if (is_array($this->description)) {
@@ -37,9 +34,9 @@ final class RdapNotice extends RdapObject {
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getTitle(): ?string {
+    public function getTitle(): string {
         return $this->title;
     }
 

@@ -36,9 +36,6 @@ final class RdapNameserver extends RdapObject {
         return $return;
     }
 
-    /**
-     * @return void
-     */
     public function dumpContents(): void {
         echo '- Object Classname: ' . $this->getObjectClassname() . PHP_EOL;
         echo '- LDH Name: ' . $this->ldhName . PHP_EOL;

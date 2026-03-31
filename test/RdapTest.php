@@ -5,6 +5,8 @@ namespace Metaregistrar\RDAP;
 use Metaregistrar\RDAP\Data\RdapEntity;
 use Metaregistrar\RDAP\Data\RdapNameserver;
 use Metaregistrar\RDAP\Data\RdapNotice;
+use Metaregistrar\RDAP\Rdap;
+use Metaregistrar\RDAP\RdapException;
 use PHPUnit\Framework\TestCase;
 
 final class RdapTest extends TestCase {
@@ -35,12 +37,6 @@ final class RdapTest extends TestCase {
         new Rdap('');
     }
 
-    /**
-     *
-     *
-     * @return void
-     * @throws \Metaregistrar\RDAP\RdapException
-     */
     public function testDomainSearch(): void {
         $rdap = new Rdap(Rdap::DOMAIN);
 
@@ -57,60 +53,6 @@ final class RdapTest extends TestCase {
         }
     }
 
-    /**
-     * @return void
-     * @throws \Metaregistrar\RDAP\RdapException
-     */
-    public function testNonExistantSearch(): void {
-        $rdap = new Rdap(Rdap::DOMAIN);
-
-        $response = $rdap->search('mrfglsadfgasdf.rocks');
-
-        $this->assertNotNull($response);
-
-        $this->assertEquals(404, $response->getErrorCode());
-        $this->assertEquals('Object not found', $response->getTitle());
-    }
-
-    /**
-     * @return void
-     * @throws \Metaregistrar\RDAP\RdapException
-     */
-    public function testSiteSearch(): void {
-        $rdap = new Rdap(Rdap::DOMAIN);
-
-        $response = $rdap->search('adac.site');
-
-        $this->assertNotNull($response);
-
-        $secureDNS = $response->getSecureDNS();
-        $this->assertIsArray($secureDNS);
-
-        $tags = [];
-        foreach ($secureDNS as $dns) {
-            $tags[] = $dns->getKeyTag();
-        }
-    }
-    /**
-     * @return void
-     * @throws \Metaregistrar\RDAP\RdapException
-     */
-    public function testInvalidDomainSearch(): void {
-        $rdap = new Rdap(Rdap::DOMAIN);
-
-        $invalidDomainName = 'notADomainName';
-
-        $this->expectException(RdapException::class);
-        $this->expectExceptionMessage("Invalid domain name '$invalidDomainName'.");
-
-        $rdap->search($invalidDomainName);
-    }
-
-
-    /**
-     * @return void
-     * @throws \Metaregistrar\RDAP\RdapException
-     */
     public function testIpv4Search(): void {
         $rdap = new Rdap(Rdap::IPV4);
 

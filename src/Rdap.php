@@ -6,7 +6,7 @@ use Metaregistrar\RDAP\Responses\RdapAsnResponse;
 use Metaregistrar\RDAP\Responses\RdapIpResponse;
 use Metaregistrar\RDAP\Responses\RdapResponse;
 
-class Rdap {
+final class Rdap {
     public const ASN    = 'asn';
     public const IPV4   = 'ipv4';
     public const IPV6   = 'ipv6';
@@ -120,8 +120,8 @@ class Rdap {
                         if ($service[1][0][strlen($service[1][0]) - 1] !== '/') {
                             $service[1][0] .= '/';
                         }
-                        $rdap = file_get_contents($service[1][0] . self::$protocols[$this->protocol][self::SEARCH] . $search);
-
+                        $rdap = @file_get_contents($service[1][0] . self::$protocols[$this->protocol][self::SEARCH] . $search);
+                        if ($rdap === false) return null;
                         return $this->createResponse($this->getProtocol(), $rdap);
                     }
                 } else {
@@ -132,8 +132,8 @@ class Rdap {
                             $service[1][0] .= '/';
                         }
 
-                        $rdap = file_get_contents($service[1][0] . self::$protocols[$this->protocol][self::SEARCH] . $search);
-
+                        $rdap = @file_get_contents($service[1][0] . self::$protocols[$this->protocol][self::SEARCH] . $search);
+                        if ($rdap === false) return null;
                         return $this->createResponse($this->getProtocol(), $rdap);
                     }
                 }
@@ -187,7 +187,7 @@ class Rdap {
      * @return \Metaregistrar\RDAP\Responses\RdapResponse
      * @throws \Metaregistrar\RDAP\RdapException
      */
-    protected function createResponse(string $protocol, string $json): RdapResponse {
+    private function createResponse(string $protocol, string $json): RdapResponse {
         switch ($protocol) {
             case self::IPV4:
                 return new RdapIpResponse($json);

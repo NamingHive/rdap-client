@@ -44,7 +44,7 @@ final class RdapSecureDNS extends RdapObject {
     }
 
     /**
-     * @return void
+     *
      */
     public function dumpContents(): void {
         if ($this->delegationSigned) {
@@ -64,15 +64,11 @@ final class RdapSecureDNS extends RdapObject {
      * @return null|string
      */
     public function getKeyTag(): ?string {
-        if (is_array($this->keyTag)) {
-            return (string)array_shift($this->keyTag);
-        }
-
         return $this->keyTag;
     }
 
     /**
-     * @return void
+     *
      */
     public function dumpDigest(): void {
         echo '- Delegation signed: ' . $this->getDelegationSigned() . PHP_EOL;
@@ -101,10 +97,6 @@ final class RdapSecureDNS extends RdapObject {
      * @return null|string
      */
     public function getAlgorithm(): ?string {
-        if (is_array($this->algorithm)) {
-            return (string)array_shift($this->algorithm);
-        }
-
         return $this->algorithm;
     }
 
@@ -112,10 +104,6 @@ final class RdapSecureDNS extends RdapObject {
      * @return null|string
      */
     public function getDigestType(): ?string {
-        if (is_array($this->digestType)) {
-            return (string)array_shift($this->digestType);
-        }
-
         return $this->digestType;
     }
 
@@ -123,10 +111,6 @@ final class RdapSecureDNS extends RdapObject {
      * @return null|string
      */
     public function getDigest(): ?string {
-        if (is_array($this->digest)) {
-            return (string)array_shift($this->digest);
-        }
-
         return $this->digest;
     }
 
@@ -138,7 +122,7 @@ final class RdapSecureDNS extends RdapObject {
     }
 
     /**
-     * @return void
+     *
      */
     public function dumpDnskey(): void {
         echo '- Delegation signed: ' . $this->getDelegationSigned() . PHP_EOL;

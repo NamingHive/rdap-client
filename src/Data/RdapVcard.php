@@ -95,11 +95,6 @@ final class RdapVcard {
         return null;
     }
 
-    public function getContentSimple(){
-        return $this->content;
-    }
-
-
     public function dumpContentTypes(): string {
         $return = '';
         if (is_array($this->contenttypes)) {
@@ -114,4 +109,3 @@ final class RdapVcard {
         return $return;
     }
 }
-

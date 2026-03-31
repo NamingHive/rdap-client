@@ -20,8 +20,4 @@ final class RdapPublicId extends RdapObject {
             echo "- $type: $identifier\n";
         }
     }
-
-    public function getIds(){
-        return $this->ids;
-    }
 }

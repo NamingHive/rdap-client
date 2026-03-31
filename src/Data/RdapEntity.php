@@ -27,12 +27,9 @@ final class RdapEntity extends RdapObject {
      * @var RdapVcard[]|null
      */
     protected $vcards         ;
-
     protected $vcardArray     ;
-
     protected $objectClassName;
-
-    protected $remarks;
+    protected $remarks         = array();
     /**
      * @var RdapRole[]|null
      */
@@ -41,20 +38,7 @@ final class RdapEntity extends RdapObject {
      * @var null|RdapPublicId[]
      */
     protected $publicIds;
-
     protected $entities ;
-
-    protected $events;
-
-    protected $links;
-
-    protected $legalRepresentative;
-
-    protected $nicbrDomainCount;
-
-    protected $nicbrInetCount;
-
-    protected $nicbrAutnumCount;
 
     public function __construct(string $key, $content) {
         parent::__construct($key, $content);
@@ -110,9 +94,9 @@ final class RdapEntity extends RdapObject {
                 echo '- Role: ' . $role->getRole() . PHP_EOL;
             }
         }
-        //if (isset($this->port43)) {
-        //    echo '- Port 43 whois: ' . $this->getPort43() . PHP_EOL;
-        //}
+        if (isset($this->port43)) {
+            echo '- Port 43 whois: ' . $this->getPort43() . PHP_EOL;
+        }
         if (isset($this->publicIds) && is_array($this->publicIds)) {
             foreach ($this->publicIds as $publicid) {
                 $publicid->dumpContents();
@@ -128,66 +112,14 @@ final class RdapEntity extends RdapObject {
     /**
      * @return string|null
      */
-    public function getHandle() {
-        if (is_array($this->handle)){
-            return $this->handle[0];
-        }
-        else {
-            return $this->handle;
-        }
-
+    public function getHandle(): ?string {
+        return $this->handle;
     }
 
     /**
      * @return null|string
      */
-    public function getPort43() {
+    public function getPort43(): ?string {
         return $this->port43;
-    }
-
-    public function getEntities() {
-            return $this->entities;
-    }
-
-    public function getPublicIds() {
-        return $this->publicIds;
-    }
-
-    public function getVcards() {
-        return $this->vcards;
-    }
-
-    public function getEvents(){
-        return $this->events;
-    }
-
-    public function getLinks(){
-        return $this->links;
-    }
-
-    public function getLegalRepresentative(){
-        return $this->legalRepresentative;
-    }
-
-    public function getRemarks(){
-        return $this->remarks;
-    }
-
-
-    public function getStatus(){
-        return $this->status;
-      }
-
-
-    public function getNicbrDomainCount(){
-        return $this->nicbrDomainCount;
-    }
-
-    public function getNicbrInetCount(){
-        return $this->nicbrInetCount;
-    }
-
-    public function getNicbrAutnumCount(){
-        return $this->nicbrAutnumCount;
     }
 }

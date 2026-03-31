@@ -5,18 +5,10 @@ namespace Metaregistrar\RDAP\Data;
 final class RdapRemark extends RdapObject {
     protected $description = [];
 
-    /**
-     * @return void
-     */
     public function dumpContents(): void {
-        foreach ($this->getDescription() as $description) {
-            $description->dumpContents();
-        }
+        echo '- ' . implode(', ', $this->getDescription()) . PHP_EOL;
     }
 
-    /**
-     * @return RdapDescription[]
-     */
     public function getDescription(): array {
         return $this->description;
     }
