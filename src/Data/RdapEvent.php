@@ -2,11 +2,14 @@
 
 namespace NamingHive\RDAP\Data;
 
-final class RdapEvent extends RdapObject {
-    protected $events;
+final class RdapEvent extends RdapObject
+{
+    protected ?array $events = null;
 
-    public function __construct(string $key, $content) {
+    public function __construct(string $key, mixed $content)
+    {
         parent::__construct($key, null);
+
         if (isset($content[0])) {
             foreach ($content as $c) {
                 $this->events[$c['eventAction']] = $c['eventDate'];
@@ -16,17 +19,16 @@ final class RdapEvent extends RdapObject {
         }
     }
 
-    /**
-     * @return array|null
-     */
-    public function getEvents(): ?array {
+    public function getEvents(): ?array
+    {
         return $this->events;
     }
 
-    public function dumpContents(): void {
+    public function dumpContents(): void
+    {
         if (is_array($this->events)) {
             foreach ($this->events as $action => $date) {
-                echo "  - $action: $date\n";
+                echo "  - {$action}: {$date}\n";
             }
         }
     }

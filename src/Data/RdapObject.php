@@ -2,133 +2,119 @@
 
 namespace NamingHive\RDAP\Data;
 
+use AllowDynamicProperties;
 use NamingHive\RDAP\RdapException;
 
 /**
- * This is the parent  class for all RdapXXXXX objects. This  class will interpret the json that was received and convert it into objects that give back the data required
- * Class RdapObject
+ * Base class for all RDAP data objects.
  *
- * @package NamingHive\RDAP
+ * Interprets JSON data and converts it into typed objects
+ * using a key-to-class mapping system.
  */
-class RdapObject {
-    /**
-     * @var string
-     */
-    protected $objectClassName;
+#[AllowDynamicProperties]
+class RdapObject
+{
+    protected ?string $objectClassName = null;
 
     /**
-     * RdapObject constructor.
+     * @param string $key The JSON key this object was created from
+     * @param mixed $content The decoded JSON content
      *
-     * @param string $key
-     * @param mixed  $content
-     *
-     * @throws \NamingHive\RDAP\RdapException
+     * @throws RdapException
      */
-    public function __construct(string $key, $content) {
-        if ($content) {
-            if (is_array($content)) {
-                foreach ($content as $contentKey => $contentValue) {
-                    if (is_array($contentValue)) {
-                        if (is_numeric($contentKey)) {
-                            foreach ($contentValue as $k => $v) {
+    public function __construct(string $key, mixed $content)
+    {
+        if ($content === null) {
+            return;
+        }
+
+        if (is_array($content)) {
+            foreach ($content as $contentKey => $contentValue) {
+                if (is_array($contentValue)) {
+                    if (is_numeric($contentKey)) {
+                        foreach ($contentValue as $k => $v) {
+                            if (is_array($v)) {
                                 $this->{$k}[] = self::createObject($k, $v);
+                            } else {
+                                // Scalar values (objectClassName, handle, etc.)
+                                // must be assigned directly — PHP 8.4 forbids
+                                // auto-initializing arrays on typed scalar properties
+                                $this->{$k} = $v;
                             }
-                        } else {
-                            $this->{$contentKey}[] = self::createObject($contentKey, $contentValue);
                         }
                     } else {
-                        $this->{$contentKey} = $contentValue;
+                        $this->{$contentKey}[] = self::createObject($contentKey, $contentValue);
                     }
+                } else {
+                    $this->{$contentKey} = $contentValue;
                 }
-            } else {
-                $var          = str_replace('NamingHive\RDAP\\', '', $key);
-                $this->{$var} = $content;
             }
+        } else {
+            $var = str_replace('NamingHive\\RDAP\\', '', $key);
+            $this->{$var} = $content;
         }
     }
 
     /**
-     *
-     *
-     * @param $key
-     * @param $value
-     *
-     * @return mixed
-     * @throws \NamingHive\RDAP\RdapException
+     * Map a JSON key to the corresponding RDAP data class.
      */
-    private static function createObject($key, $value) {
-        if (is_numeric($key)) {
-            if (is_array($value)) {
-                throw new RdapException("'$key' can not be an array.");
-            }
+    public static function keyToObject(string $name, mixed $content): mixed
+    {
+        $className = self::keyToObjectName($name);
 
-            return $value;
-        }
-
-        return self::KeyToObject($key, $value);
-    }
-
-    /**
-     *
-     *
-     * @param string $name
-     * @param $content
-     *
-     * @return mixed
-     */
-    public static function KeyToObject(string $name, $content) {
-        $name = self::KeyToObjectName($name);
-        if (class_exists($name)) {
-            return new $name($name, $content);
+        if (class_exists($className)) {
+            return new $className($name, $content);
         }
 
         return $content;
     }
 
     /**
-     *
-     *
-     * @param string $name
-     *
-     * @return string
+     * Get the object class name from the RDAP response.
      */
-    private static function KeyToObjectName(string $name): string {
-        switch ($name) {
-            case 'rdapConformance':
-                return RdapConformance::class;
-            case 'entities':
-                return RdapEntity::class;
-            case 'remarks':
-                return RdapRemark::class;
-            case 'links':
-                return RdapLink::class;
-            case 'notices':
-                return RdapNotice::class;
-            case 'events':
-                return RdapEvent::class;
-            case 'roles':
-                return RdapRole::class;
-            case 'description':
-                return RdapDescription::class;
-            case 'port43':
-                return RdapPort43::class;
-            case 'nameservers':
-                return RdapNameserver::class;
-            case 'secureDNS':
-                return RdapSecureDNS::class;
-            case 'status':
-                return RdapStatus::class;
-            case 'publicIds':
-                return RdapPublicId::class;
-            default:
-                return $name;
-        }
+    final public function getObjectClassname(): ?string
+    {
+        return $this->objectClassName;
     }
 
     /**
-     * @return string
+     * Create a child object from a key-value pair.
+     *
+     * @throws RdapException
      */
-     final public function getObjectClassname(): string {
-        return $this->objectClassName;
+    private static function createObject(string|int $key, mixed $value): mixed
+    {
+        if (is_numeric($key)) {
+            if (is_array($value)) {
+                throw new RdapException("'{$key}' can not be an array.");
+            }
+
+            return $value;
+        }
+
+        return self::keyToObject($key, $value);
+    }
+
+    /**
+     * Map a JSON key name to its corresponding RDAP data class name.
+     */
+    private static function keyToObjectName(string $name): string
+    {
+        return match ($name) {
+            'rdapConformance' => RdapConformance::class,
+            'entities'        => RdapEntity::class,
+            'remarks'         => RdapRemark::class,
+            'links'           => RdapLink::class,
+            'notices'         => RdapNotice::class,
+            'events'          => RdapEvent::class,
+            'roles'           => RdapRole::class,
+            'description'     => RdapDescription::class,
+            'port43'          => RdapPort43::class,
+            'nameservers'     => RdapNameserver::class,
+            'secureDNS'       => RdapSecureDNS::class,
+            'status'          => RdapStatus::class,
+            'publicIds'       => RdapPublicId::class,
+            default           => $name,
+        };
     }
 }

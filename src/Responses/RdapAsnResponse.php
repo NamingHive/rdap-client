@@ -2,5 +2,6 @@
 
 namespace NamingHive\RDAP\Responses;
 
-class RdapAsnResponse extends RdapResponse {
+final class RdapAsnResponse extends RdapResponse
+{
 }

@@ -6,3 +6,7 @@ Examples/
 gewenstobject.txt
 jsonobject.txt
 vendor/
+.phpunit.cache
+err.log
+test_results.log
+test_output.txt

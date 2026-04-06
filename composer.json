@@ -1,11 +1,12 @@
 {
   "name": "naminghive/rdap-client",
-  "description": "A php client to query rdap (formerly whois) services",
+  "description": "A PHP client to query RDAP (formerly WHOIS) services",
   "minimum-stability": "stable",
   "license": "proprietary",
   "require": {
-    "php": ">=8.0",
-    "ext-json": "*"
+    "php": ">=8.1",
+    "ext-json": "*",
+    "guzzlehttp/guzzle": "^7.0"
   },
   "authors": [
     {
@@ -18,7 +19,12 @@
       "NamingHive\\RDAP\\": "src"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "NamingHive\\RDAP\\Tests\\": "tests"
+    }
+  },
   "require-dev": {
-    "phpunit/phpunit": "^8"
+    "phpunit/phpunit": "^10.0 || ^11.0"
   }
 }

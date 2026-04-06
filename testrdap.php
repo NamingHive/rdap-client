@@ -1,34 +1,44 @@
 <?php
+
+/**
+ * Manual test script for the RDAP client library.
+ *
+ * Usage: php testrdap.php
+ */
+
 include './vendor/autoload.php';
 
-//$search = 59980;
-//$protocol = NamingHive\RDAP\rdap::ASN;
-//$search = 'RIPE-NCC-END-MNT';
-//$search = '81.4.97.200';
-//$search = '196.216.2.6';
-//$search = '8.8.4.4';
-$search = 'gamma.com';
-//$protocol = NamingHive\RDAP\Rdap::IPV4;
-$protocol = NamingHive\RDAP\Rdap::DOMAIN;
+use NamingHive\RDAP\Protocol;
+use NamingHive\RDAP\Rdap;
+use NamingHive\RDAP\RdapException;
+
+// --- Configure the search ---
+$search   = 'gammaddqwdwqdq.com';
+$protocol = Protocol::Domain;
+
+// Uncomment for other search types:
+// $search   = '8.8.4.4';
+// $protocol = Protocol::Ipv4;
+
+// $search   = '59980';
+// $protocol = Protocol::Asn;
 
 try {
-    $rdap = new NamingHive\RDAP\Rdap($protocol);
+    $rdap = new Rdap($protocol);
     $test = $rdap->search($search);
 
     if ($test) {
-        echo 'class name: ' .$test->getClassname().PHP_EOL;
-        echo 'handle: ' .$test->getHandle().PHP_EOL;
-        echo 'LDH (letters, digits, hyphens) name: ' .$test->getLDHName().PHP_EOL;
-        //echo "name: ".$test->getName().PHP_EOL;
-        //echo "country: ".$test->getCountry().PHP_EOL;
-        //echo "type: ".$test->getType().PHP_EOL;
-        //echo "port 43 service: ".$test->getPort43().PHP_EOL;
+        echo 'Class name: ' . $test->getClassname() . PHP_EOL;
+        echo 'Handle: ' . $test->getHandle() . PHP_EOL;
+        echo 'LDH (letters, digits, hyphens) name: ' . $test->getLDHName() . PHP_EOL;
+
         if (is_array($test->getNameservers())) {
             echo "\nNameservers:\n";
             foreach ($test->getNameservers() as $nameserver) {
                 $nameserver->dumpContents();
             }
         }
+
         if (is_array($test->getSecureDNS())) {
             echo "DNSSEC:\n";
             foreach ($test->getSecureDNS() as $dnssec) {
@@ -36,18 +46,21 @@ try {
             }
             echo PHP_EOL;
         }
-        echo "rdap conformance: \n";
+
+        echo "RDAP conformance:\n";
         foreach ($test->getConformance() as $conformance) {
             $conformance->dumpContents();
         }
         echo PHP_EOL;
+
         if (is_array($test->getEntities())) {
             echo "Entities found:\n";
-            foreach($test->getEntities() as $entity) {
+            foreach ($test->getEntities() as $entity) {
                 $entity->dumpContents();
                 echo PHP_EOL;
             }
         }
+
         if (is_array($test->getLinks())) {
             echo "Links:\n";
             foreach ($test->getLinks() as $link) {
@@ -55,6 +68,7 @@ try {
             }
             echo PHP_EOL;
         }
+
         if (is_array($test->getNotices())) {
             echo "Notices:\n";
             foreach ($test->getNotices() as $notice) {
@@ -62,6 +76,7 @@ try {
             }
             echo PHP_EOL;
         }
+
         if (is_array($test->getRemarks())) {
             echo "Remarks:\n";
             foreach ($test->getRemarks() as $remark) {
@@ -69,6 +84,7 @@ try {
             }
             echo PHP_EOL;
         }
+
         if (is_array($test->getStatus())) {
             echo "Statuses:\n";
             foreach ($test->getStatus() as $status) {
@@ -77,7 +93,6 @@ try {
             echo PHP_EOL;
         }
 
-
         if (is_array($test->getEvents())) {
             echo "Events:\n";
             foreach ($test->getEvents() as $event) {
@@ -85,11 +100,8 @@ try {
             }
         }
     } else {
-        echo "$search was not found on any RDAP service\n";
+        echo "{$search} was not found on any RDAP service\n";
     }
-
-
-
-} catch (NamingHive\RDAP\rdapException $e) {
-    echo 'ERROR: ' .$e->getMessage().PHP_EOL;
+} catch (RdapException $e) {
+    echo 'ERROR: ' . $e->getMessage() . PHP_EOL;
 }

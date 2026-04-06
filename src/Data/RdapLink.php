@@ -2,63 +2,45 @@
 
 namespace NamingHive\RDAP\Data;
 
-final class RdapLink extends RdapObject {
-    /**
-     * @var string
-     */
-    protected $rel;
-    /**
-     * @var string
-     */
-    protected $href;
-    /**
-     * @var string
-     */
-    protected $title;
-    /**
-     * @var string
-     */
-    protected $value;
+final class RdapLink extends RdapObject
+{
+    protected ?string $rel = null;
+    protected ?string $href = null;
+    protected ?string $title = null;
+    protected ?string $value = null;
+    protected ?string $type = null;
 
-    public function __construct(string $key, $content) {
+    public function __construct(string $key, mixed $content)
+    {
         parent::__construct($key, null);
+
         if (is_array($content)) {
-            if (isset($content[0])) {
-                $this->rel   = $content[0]['rel'];
-                $this->href  = $content[0]['href'];
-                $this->type  = $content[0]['type'];
-                $this->value = $content[0]['value'];
-            } else {
-                $this->rel   = $content['rel'];
-                $this->href  = $content['href'];
-                $this->type  = $content['type'];
-                $this->value = $content['value'];
-            }
+            $data = isset($content[0]) ? $content[0] : $content;
+
+            $this->rel   = $data['rel'] ?? null;
+            $this->href  = $data['href'] ?? null;
+            $this->type  = $data['type'] ?? null;
+            $this->value = $data['value'] ?? null;
         }
     }
 
-    public function dumpContents(): void {
-        echo '  - Link: ' . $this->rel . ': ', $this->href . ' (' . $this->title . ")\n";
+    public function dumpContents(): void
+    {
+        echo '  - Link: ' . $this->rel . ': ' . $this->href . ' (' . $this->title . ")\n";
     }
 
-    /**
-     * @return string
-     */
-    public function getRel(): string {
+    public function getRel(): ?string
+    {
         return $this->rel;
     }
 
-    /**
-     * @return string
-     */
-    public function getHref(): string {
+    public function getHref(): ?string
+    {
         return $this->href;
     }
 
-    /**
-     * @return string
-     */
-    public function getTitle(): string {
+    public function getTitle(): ?string
+    {
         return $this->title;
     }
 }

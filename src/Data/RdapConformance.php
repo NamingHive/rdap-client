@@ -2,20 +2,17 @@
 
 namespace NamingHive\RDAP\Data;
 
-final class RdapConformance extends RdapObject {
-    protected $rdapConformance;
+final class RdapConformance extends RdapObject
+{
+    protected ?string $rdapConformance = null;
 
-    /**
-     * @return void
-     */
-    public function dumpContents(): void {
+    public function dumpContents(): void
+    {
         echo '- ' . $this->getRdapConformance() . PHP_EOL;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getRdapConformance(): ?string {
+    public function getRdapConformance(): ?string
+    {
         return $this->rdapConformance;
     }
 }

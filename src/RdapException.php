@@ -1,8 +1,12 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace NamingHive\RDAP;
 
 use Exception;
 
-class RdapException extends Exception {
+/**
+ * Exception thrown by the RDAP client library.
+ */
+class RdapException extends Exception
+{
 }

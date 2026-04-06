@@ -2,140 +2,74 @@
 
 namespace NamingHive\RDAP;
 
+use NamingHive\RDAP\Data\Cache\BootstrapCache;
+use NamingHive\RDAP\Http\HttpClient;
 use NamingHive\RDAP\Responses\RdapAsnResponse;
 use NamingHive\RDAP\Responses\RdapIpResponse;
 use NamingHive\RDAP\Responses\RdapResponse;
 
-final class Rdap {
-    public const ASN    = 'asn';
-    public const IPV4   = 'ipv4';
-    public const IPV6   = 'ipv6';
-    public const NS     = 'ns';
-    public const DOMAIN = 'domain';
-    public const SEARCH = 'search';
-    public const HOME   = 'home';
+/**
+ * RDAP (Registration Data Access Protocol) client.
+ *
+ * Queries IANA bootstrap registries to discover the correct RDAP server
+ * for a given resource, then fetches and parses the RDAP response.
+ *
+ * Bootstrap data is cached locally to avoid redundant HTTP requests to IANA.
+ */
+final class Rdap
+{
+    private string $publicationDate = '';
+    private string $version = '';
+    private string $description = '';
 
-    private static $protocols = [
-        'ipv4'   => [self::HOME => 'https://data.iana.org/rdap/ipv4.json', self::SEARCH => 'ip/'],
-        'domain' => [self::HOME => 'https://data.iana.org/rdap/dns.json', self::SEARCH => 'domain/'],
-        'ns'     => [self::HOME => 'https://data.iana.org/rdap/dns.json', self::SEARCH => 'nameserver/'],
-        'ipv6'   => [self::HOME => 'https://data.iana.org/rdap/ipv6.json', self::SEARCH => 'ip/'],
-        'asn'    => [self::HOME => 'https://data.iana.org/rdap/asn.json', self::SEARCH => 'autnum/']
-    ];
-
-    private $protocol;
-    private $publicationdate = '';
-    private $version         = '';
-    private $description     = '';
+    private readonly BootstrapCache $cache;
+    private readonly HttpClient $http;
 
     /**
-     * Rdap constructor.
+     * @param Protocol $protocol The RDAP protocol type to query
+     * @param BootstrapCache|null $cache Custom cache instance (default: file cache with 24h TTL)
+     * @param HttpClient|null $http Custom HTTP client (default: Guzzle with sensible defaults)
+     */
+    public function __construct(
+        private readonly Protocol $protocol,
+        ?BootstrapCache $cache = null,
+        ?HttpClient $http = null,
+    ) {
+        $this->cache = $cache ?? new BootstrapCache();
+        $this->http = $http ?? new HttpClient();
+    }
+
+    /**
+     * Search for information about a resource (domain, IP, ASN, etc.).
      *
-     * @param string $protocol
-     *
-     * @throws \NamingHive\RDAP\RdapException
+     * @throws RdapException If the search parameter is invalid or the request fails
      */
-    public function __construct(string $protocol) {
-        if (($protocol !== self::ASN) && ($protocol !== self::IPV4) && ($protocol !== self::IPV6) && ($protocol !== self::DOMAIN)) {
-            throw new RdapException('Protocol ' . $protocol . ' is not recognized by this rdap client implementation');
-        }
-
-        $this->protocol = $protocol;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPublicationdate(): string {
-        return $this->publicationdate;
-    }
-
-    /**
-     * @param string $publicationdate
-     */
-    public function setPublicationdate(string $publicationdate): void {
-        $this->publicationdate = $publicationdate;
-    }
-
-    /**
-     * @return string
-     */
-    public function getVersion(): string {
-        return $this->version;
-    }
-
-    /**
-     * @param string $version
-     */
-    public function setVersion(string $version): void {
-        $this->version = $version;
-    }
-
-    /**
-     * @return string
-     */
-    public function getDescription(): string {
-        return $this->description;
-    }
-
-    /**
-     * @param string $description
-     */
-    public function setDescription(string $description): void {
-        $this->description = $description;
-    }
-
-    /**
-     *
-     *
-     * @param string $search
-     *
-     * @return \NamingHive\RDAP\Responses\RdapAsnResponse|\NamingHive\RDAP\Responses\RdapIpResponse|\NamingHive\RDAP\Responses\RdapResponse|null
-     * @throws \NamingHive\RDAP\RdapException
-     */
-    public function search(string $search): ?RdapResponse {
-        if (!isset($search) || ($search === '')) {
+    public function search(string $search): ?RdapResponse
+    {
+        if (trim($search) === '') {
             throw new RdapException('Search parameter may not be empty');
         }
 
         $search = trim($search);
-        if ((!is_string($search)) && in_array($this->getProtocol(), [self::DOMAIN, self::NS, self::IPV4, self::IPV6], true)) {
-            throw new RdapException('Search parameter must be a string for ipv4, ipv6, domain or nameserver searches');
-        }
 
-        if ((!is_numeric($search)) && ($this->getProtocol() === self::ASN)) {
-            throw new RdapException('Search parameter must be a number or a string with numeric info for asn searches');
+        if (!is_numeric($search) && $this->protocol === Protocol::Asn) {
+            throw new RdapException('Search parameter must be a number or a string with numeric info for ASN searches');
         }
 
         $parameter = $this->prepareSearch($search);
-        $services  = $this->readRoot();
+        $services = $this->readRoot();
 
         foreach ($services as $service) {
             foreach ($service[0] as $number) {
-                // ip address range match
-                if (strpos($number, '-') > 0) {
+                // IP address range match
+                if (str_contains($number, '-')) {
                     [$start, $end] = explode('-', $number);
-                    if (($parameter >= $start) && ($parameter <= $end)) {
-                        // check for slash as last character in the server name, if not, add it
-                        if ($service[1][0][strlen($service[1][0]) - 1] !== '/') {
-                            $service[1][0] .= '/';
-                        }
-                        $rdap = @file_get_contents($service[1][0] . self::$protocols[$this->protocol][self::SEARCH] . $search);
-                        if ($rdap === false) return null;
-                        return $this->createResponse($this->getProtocol(), $rdap);
+                    if ($parameter >= $start && $parameter <= $end) {
+                        return $this->fetchRdapResponse($service[1][0], $search);
                     }
-                } else {
-                    // exact match
-                    if ($number === $parameter) {
-                        // check for slash as last character in the server name, if not, add it
-                        if ($service[1][0][strlen($service[1][0]) - 1] !== '/') {
-                            $service[1][0] .= '/';
-                        }
-
-                        $rdap = @file_get_contents($service[1][0] . self::$protocols[$this->protocol][self::SEARCH] . $search);
-                        if ($rdap === false) return null;
-                        return $this->createResponse($this->getProtocol(), $rdap);
-                    }
+                } elseif ($number === $parameter) {
+                    // Exact match
+                    return $this->fetchRdapResponse($service[1][0], $search);
                 }
             }
         }
@@ -144,60 +78,114 @@ final class Rdap {
     }
 
     /**
-     * @return string
+     * Get the protocol being used for this client instance.
      */
-    public function getProtocol(): string {
+    public function getProtocol(): Protocol
+    {
         return $this->protocol;
     }
 
-    private function prepareSearch(string $string): string {
-        switch ($this->getProtocol()) {
-            case self::IPV4:
-                [$start] = explode('.', $string);
-
-                return $start . '.0.0.0/8';
-            case self::DOMAIN:
-                $extension = explode('.', $string, 2);
-
-                return $extension[1];
-            default:
-                return $string;
-        }
+    /**
+     * Get the publication date of the bootstrap data.
+     */
+    public function getPublicationDate(): string
+    {
+        return $this->publicationDate;
     }
 
     /**
-     * @return array
+     * Get the version of the bootstrap data.
      */
-    private function readRoot(): array {
-        $rdap = file_get_contents(self::$protocols[$this->protocol][self::HOME]);
-        $json = json_decode($rdap, false);
-        $this->setDescription($json->description);
-        $this->setPublicationdate($json->publication);
-        $this->setVersion($json->version);
-
-        return $json->services;
+    public function getVersion(): string
+    {
+        return $this->version;
     }
 
     /**
-     *
-     *
-     * @param string $protocol
-     * @param string $json
-     *
-     * @return \NamingHive\RDAP\Responses\RdapResponse
-     * @throws \NamingHive\RDAP\RdapException
+     * Get the description of the bootstrap data.
      */
-    private function createResponse(string $protocol, string $json): RdapResponse {
-        switch ($protocol) {
-            case self::IPV4:
-                return new RdapIpResponse($json);
-            case self::ASN:
-                return new RdapAsnResponse($json);
-            default:
-                return new RdapResponse($json);
-        }
+    public function getDescription(): string
+    {
+        return $this->description;
     }
 
-    public function case(): void {
+    /**
+     * Fetch and parse an RDAP response from a given server.
+     *
+     * @throws RdapException If the HTTP request fails
+     */
+    private function fetchRdapResponse(string $serverUrl, string $search): ?RdapResponse
+    {
+        // Ensure trailing slash
+        if (!str_ends_with($serverUrl, '/')) {
+            $serverUrl .= '/';
+        }
+
+        $url = $serverUrl . $this->protocol->searchPath() . $search;
+
+        try {
+            $rdap = $this->http->get($url);
+        } catch (RdapException) {
+            return null;
+        }
+
+        return $this->createResponse($rdap);
+    }
+
+    /**
+     * Prepare the search parameter for matching against bootstrap data.
+     */
+    private function prepareSearch(string $string): string
+    {
+        return match ($this->protocol) {
+            Protocol::Ipv4 => explode('.', $string)[0] . '.0.0.0/8',
+            Protocol::Domain => explode('.', $string, 2)[1] ?? $string,
+            default => $string,
+        };
+    }
+
+    /**
+     * Read the IANA bootstrap data, using cache when available.
+     *
+     * @return array The services array from the IANA bootstrap data
+     * @throws RdapException If the bootstrap data cannot be fetched or parsed
+     */
+    private function readRoot(): array
+    {
+        // Try cache first
+        $cached = $this->cache->get($this->protocol);
+        if ($cached !== null) {
+            $this->description = $cached['description'] ?? '';
+            $this->publicationDate = $cached['publication'] ?? '';
+            $this->version = $cached['version'] ?? '';
+
+            return $cached['services'];
+        }
+
+        // Fetch from IANA
+        $data = $this->http->getJson($this->protocol->bootstrapUrl());
+
+        $this->description = $data['description'] ?? '';
+        $this->publicationDate = $data['publication'] ?? '';
+        $this->version = $data['version'] ?? '';
+
+        // Cache the result
+        $this->cache->set($this->protocol, $data);
+
+        return $data['services'] ?? [];
+    }
+
+    /**
+     * Create the appropriate response object based on the protocol.
+     *
+     * @throws RdapException If the JSON cannot be parsed
+     */
+    private function createResponse(string $json): RdapResponse
+    {
+        return match ($this->protocol) {
+            Protocol::Ipv4, Protocol::Ipv6 => new RdapIpResponse($json),
+            Protocol::Asn                  => new RdapAsnResponse($json),
+            default                        => new RdapResponse($json),
+        };
     }
 }

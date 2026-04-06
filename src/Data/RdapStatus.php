@@ -2,18 +2,27 @@
 
 namespace NamingHive\RDAP\Data;
 
-final class RdapStatus extends RdapObject {
+final class RdapStatus extends RdapObject
+{
+    protected ?string $rdapStatus = null;
+    protected ?string $status = null;
 
-    /**
-     * @var null|string
-     */
-    protected $rdapStatus;
+    public function __construct(string $key, mixed $content)
+    {
+        parent::__construct($key, null);
 
-    public function dumpContents(): void {
+        if (is_string($content)) {
+            $this->status = $content;
+        }
+    }
+
+    public function dumpContents(): void
+    {
         echo '- Status: ' . $this->getStatus() . PHP_EOL;
     }
 
-    public function getStatus(): ?string{
-        return $this->rdapStatus ?? $this->{0} ?? null;
+    public function getStatus(): ?string
+    {
+        return $this->rdapStatus ?? $this->status ?? null;
     }
 }

@@ -2,107 +2,94 @@
 
 namespace NamingHive\RDAP\Data;
 
-final class RdapVcard {
+final class RdapVcard
+{
+    protected ?string $name = null;
+    protected ?string $fieldtype = null;
+    protected mixed $content = null;
+    protected ?int $preference = null;
+    protected ?array $contenttypes = null;
 
-    /**
-     * @var null|string
-     */
-    protected $name;
-    /**
-     * @var null|string
-     */
-    protected $fieldtype;
-    protected $content;
-    /**
-     * @var null|int
-     */
-    protected $preference;
-    /**
-     * @var null|array
-     */
-    protected $contenttypes;
+    public function __construct(
+        mixed $name,
+        mixed $extras,
+        mixed $type,
+        mixed $contents,
+    ) {
+        $this->name = is_string($name) ? $name : null;
 
-    public function __construct($name, $extras, $type, $contents) {
-        $this->name = $name;
         if (is_array($extras)) {
             if (isset($extras['type'])) {
-                if (is_array($extras['type'])) {
-                    foreach ($extras['type'] as $contentType) {
-                        $this->contenttypes[] = $contentType;
-                    }
-                } else {
-                    $this->contenttypes[] = $extras['type'];
-                }
+                $this->contenttypes = is_array($extras['type'])
+                    ? $extras['type']
+                    : [$extras['type']];
             }
+
             if (isset($extras['pref'])) {
-                $this->preference = $extras['pref'];
+                $this->preference = (int) $extras['pref'];
             }
         }
-        $this->fieldtype = $type;
-        $this->content   = $contents;
+
+        $this->fieldtype = is_string($type) ? $type : null;
+        $this->content = $contents;
     }
 
-    public function getName(): ?string {
+    public function getName(): ?string
+    {
         return $this->name;
     }
 
-    public function getFieldtype(): ?string {
+    public function getFieldtype(): ?string
+    {
         return $this->fieldtype;
     }
 
-    public function getContentTypes(): ?array {
+    public function getContentTypes(): ?array
+    {
         return $this->contenttypes;
     }
 
-    public function dumpContents(): void {
+    public function dumpContents(): void
+    {
         echo '  - ' . $this->getContent() . PHP_EOL;
     }
 
-    public function getContent(): ?string {
-        if ($this->name === 'version') {
-            return 'Version: ' . $this->content;
-        }
-        if ($this->name === 'tel') {
-            return 'Type: ' . $this->fieldtype . ', Preference: ' . $this->preference . ', Content: ' . $this->content . ' (' . $this->dumpContentTypes() . ')';
-        }
-        if ($this->name === 'email') {
-            return 'Type: ' . $this->name . ', Content: ' . $this->content;
-        }
-        if ($this->name === 'adr') {
-            $return = 'Type: ' . $this->name . ', Content: ';
-            foreach ($this->content as $content) {
-                if (is_array($content)) {
-                    foreach ($content as $cont) {
-                        $return .= $cont . ' ';
-                    }
-                } else if (trim($content) !== '') {
-                    $return .= $content . ' ';
-                }
-            }
-
-            return $return;
-        }
-        if ($this->name === 'fn') {
-            return 'Type: ' . $this->name . ', Content: ' . $this->content;
-        }
-        if ($this->name === 'kind') {
-            return 'Kind: ' . $this->content;
-        }
-        if ($this->name === 'ISO-3166-1-alpha-2') {
-            return 'Language: ' . $this->content . ' (' . $this->name . ')';
-        }
-
-        return null;
+    public function getContent(): ?string
+    {
+        return match ($this->name) {
+            'version' => 'Version: ' . $this->content,
+            'tel'     => 'Type: ' . $this->fieldtype . ', Preference: ' . $this->preference . ', Content: ' . $this->content . ' (' . $this->dumpContentTypes() . ')',
+            'email'   => 'Type: ' . $this->name . ', Content: ' . $this->content,
+            'fn'      => 'Type: ' . $this->name . ', Content: ' . $this->content,
+            'kind'    => 'Kind: ' . $this->content,
+            'ISO-3166-1-alpha-2' => 'Language: ' . $this->content . ' (' . $this->name . ')',
+            'adr'     => $this->formatAddress(),
+            default   => null,
+        };
     }
 
-    public function dumpContentTypes(): string {
-        $return = '';
-        if (is_array($this->contenttypes)) {
-            foreach ($this->contenttypes as $type) {
-                if ($return !== '') {
-                    $return .= ', ';
-                }
-                $return .= $type;
+    public function dumpContentTypes(): string
+    {
+        if (!is_array($this->contenttypes)) {
+            return '';
+        }
+
+        return implode(', ', $this->contenttypes);
+    }
+
+    private function formatAddress(): string
+    {
+        $return = 'Type: ' . $this->name . ', Content: ';
+
+        if (!is_array($this->content)) {
+            return $return . (string) $this->content;
+        }
+
+        foreach ($this->content as $content) {
+            if (is_array($content)) {
+                $return .= implode(' ', $content) . ' ';
+            } elseif (trim((string) $content) !== '') {
+                $return .= $content . ' ';
             }
         }
 
